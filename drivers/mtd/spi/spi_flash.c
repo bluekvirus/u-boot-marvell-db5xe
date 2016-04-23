@@ -16,8 +16,8 @@
 #include "spi_flash_internal.h"
 #define PRINT_DOT
 #ifdef PRINT_DOT
-#define DOT_ERASE_BLOCK 128*1024
-#define DOT_WRITE_BLOCK 32*1024
+#define DOT_ERASE_BLOCK 4*64*1024
+#define DOT_WRITE_BLOCK 4*64*1024
 size_t print1block=4096;
 int countDot=0;
 #endif
@@ -83,6 +83,13 @@ int spi_flash_cmd_write(struct spi_slave *spi, const u8 *cmd, size_t cmd_len,
 	return spi_flash_read_write(spi, cmd, cmd_len, data, NULL, data_len);
 }
 
+//added cmd: flag write
+int spi_flash_cmd_flag_write(struct spi_flash *flash, unsigned long timeout)
+{
+	return spi_flash_cmd_poll_bit(flash, timeout,
+		CMD_READ_FLAG_STATUS, FLAG_STATUS_WRITE);
+}
+
 int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		size_t len, const void *buf)
 {
@@ -107,6 +114,9 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 
 		switch  (flash->addr_cycles) {
 			case 4:
+				//added 4B page program cmd
+				if (flash->flag_status == 0)
+					cmd[0] = CMD_4B_PAGE_PROGRAM;
 				cmd[1] = page_addr >> 16;
 				cmd[2] = page_addr >> 8;
 				cmd[3] = page_addr;
@@ -139,6 +149,13 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
 		if (ret)
 			break;
+
+		//added calling to cmd: flag write
+		if (flash->flag_status){
+			ret = spi_flash_cmd_flag_write(flash, SPI_FLASH_PROG_TIMEOUT);
+			if (ret)
+				break;
+		}
 
 		page_addr++;
 		byte_addr = 0;
@@ -182,7 +199,13 @@ int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 		size_t len, void *data)
 {
 	u8 cmd[6];
-	cmd[0] = CMD_READ_ARRAY_FAST;
+
+	//add 4B version of read array (fast)
+	if ((flash->addr_cycles ==  4) && (flash->flag_status == 0))
+		cmd[0] = CMD_4B_READ_ARRAY_FAST;
+	else
+		cmd[0] = CMD_READ_ARRAY_FAST;
+	
 	spi_flash_addr(offset, cmd, flash->addr_cycles);
 
 	cmd[flash->addr_cycles+1] = 0x00;
@@ -233,6 +256,13 @@ int spi_flash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 		CMD_READ_STATUS, STATUS_WIP);
 }
 
+//added cmd: flag erase
+int spi_flash_cmd_flag_erase(struct spi_flash *flash, unsigned long timeout)
+{
+	return spi_flash_cmd_poll_bit(flash, timeout,
+		CMD_READ_FLAG_STATUS, FLAG_STATUS_ERASE);
+}
+
 int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
 	u32 start, end, erase_size;
@@ -253,10 +283,18 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		return ret;
 	}
 
-	if (erase_size == 4096)
-		cmd[0] = CMD_ERASE_4K;
-	else
-		cmd[0] = CMD_ERASE_64K;
+	//added 4B modes to 4k and 64k erase
+	if(erase_size == 4096){
+		if ((flash->addr_cycles ==  4) && (flash->flag_status == 0))
+			cmd[0] = CMD_4B_ERASE_4K;
+		else
+			cmd[0] = CMD_ERASE_4K;
+	}else{
+		if ((flash->addr_cycles ==  4) && (flash->flag_status == 0))
+			cmd[0] = CMD_4B_ERASE_64K;
+		else
+			cmd[0] = CMD_ERASE_64K;
+	}
 	start = offset;
 	end = start + len;
 
@@ -278,6 +316,14 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PAGE_ERASE_TIMEOUT);
 		if (ret)
 			goto out;
+
+		//add call cmd: flag erase
+		if (flash->flag_status){
+			ret = spi_flash_cmd_flag_erase(flash, SPI_FLASH_PAGE_ERASE_TIMEOUT);
+			if (ret)
+				goto out;
+		}
+
 #ifdef PRINT_DOT
 	{
 		dor_erase_len += erase_size;
@@ -326,6 +372,45 @@ int spi_flash_cmd_write_status(struct spi_flash *flash, u8 sr)
 	}
 
 	return 0;
+}
+
+/*For supporting macronix MX66L*..*/
+int flash_4bytes_mode(struct spi_flash *flash, int enable)
+{
+	int ret;
+	u8 cmd[2];
+
+	ret = spi_claim_bus(flash->spi);
+	if (ret) {
+		debug("SF: Unable to claim SPI bus\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd(flash->spi, CMD_WRITE_ENABLE, NULL, 0);
+	if (ret < 0) {
+		debug("SF: Enabling Write failed\n");
+		return ret;
+	}
+
+	if (enable)
+		cmd[0] = CMD_ENTER_4BYTE;
+	else
+		cmd[0] = CMD_EXIT_4BYTE;
+
+	ret = spi_flash_cmd_write(flash->spi, cmd, 1, NULL, 0);
+	if (ret < 0) {
+		debug("SF: STMicro 4byte mode failed\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
+	if (ret < 0) {
+		debug("SF: STMicro page programming timed out\n");
+		return ret;
+	}
+
+	spi_release_bus(flash->spi);
+	return ret;
 }
 
 /*

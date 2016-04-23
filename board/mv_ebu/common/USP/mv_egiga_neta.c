@@ -95,11 +95,15 @@ int mv_eth_initialize(bd_t *bis)
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
-		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
+		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port)){
+			//printf("\nmvBoardIsGbEPortConnected (%d) - no", port);
 			continue;
+		}
 
-		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
+		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port)){
+			//printf("\nmvCtrlPwrClckGet (%d) - failed", port);
 			continue;
+		}
 		MV_BIT_SET(portMask, port);
 	}
 
@@ -203,8 +207,6 @@ static pktInfo *mvCreatePacket(MV_VOID)
 	return pkt;
 }
 
-
-
 static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 {
 	egigaPriv *priv = dev->priv;
@@ -217,6 +219,10 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 
 	/* init each port only once */
 	if (priv->devInit != MV_TRUE) {
+
+		//soft-reset PHY (Copper) before init? No need...see _gpp_callback() in mvBoardEnvSpec38x.c
+		//mvEthPhyReset(mvBoardPhyAddrGet(priv->port), 4000);
+
 		/* init the hal -- create internal port control structure and descriptor rings, */
 		/* open address decode windows, disable rx and tx operations. mask interrupts.  */
 		priv->halPriv =	mvNetaPortInit(priv->port, NULL);

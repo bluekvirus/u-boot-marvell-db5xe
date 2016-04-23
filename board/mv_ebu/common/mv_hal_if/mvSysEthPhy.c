@@ -112,6 +112,9 @@ MV_STATUS mvSysEthPhyInit(void)
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlFamily=mvCtrlDevFamilyIdGet(halData.ctrlModel);
 
+	//Tim's Debug
+	printf("%s board halData model: 0x%x, family: 0x%x\n", __func__, halData.ctrlModel, halData.ctrlFamily);
+
 	return mvEthPhyHalInit(&halData);
 }
 

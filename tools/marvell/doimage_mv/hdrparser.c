@@ -116,7 +116,7 @@ MV_U8 checksum8(void *start, MV_U32 len, MV_U8 csum)
 MV_U32 checksum32(void *start, MV_U32 len, MV_U32 csum)
 {
 	register MV_U32	sum = csum;
-	MV_U32	*startp = (MV_U32 *)start;
+	volatile MV_U32	*startp = (volatile MV_U32 *)start;
 
 	do {
 		sum += *startp;

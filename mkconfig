@@ -41,6 +41,7 @@ elif [ "${MAKEFLAGS+set}${MAKELEVEL+set}" = "setset" ] ; then
 	sleep 5
 fi
 
+#not used at all... see set ${line} above which egreps the line by target in boards.cfg
 while [ $# -gt 0 ] ; do
 	case "$1" in
 	--) shift ; break ;;
@@ -54,9 +55,9 @@ done
 [ $# -lt 4 ] && exit 1
 
 # Strip all options and/or _config suffixes
-CONFIG_NAME="${1%_config}"
+CONFIG_NAME="${1%_config}" #this will change later, see options processing below
 
-[ "${BOARD_NAME}" ] || BOARD_NAME="${1%_config}"
+[ "${BOARD_NAME}" ] || BOARD_NAME="${1%_config}" #$BOARD_NAME is really target
 
 arch="$2"
 cpu=`echo $3 | awk 'BEGIN {FS = ":"} ; {print $1}'`
@@ -99,7 +100,8 @@ else
 fi
 
 #
-# Create link to architecture specific headers
+# Create link to architecture specific headers 
+# (also cd into and stay in ./include)
 #
 if [ "$SRCTREE" != "$OBJTREE" ] ; then
 	mkdir -p ${OBJTREE}/include
@@ -180,14 +182,22 @@ echo "#define CONFIG_SYS_BOARD \"${board}\"" >> config.h
 
 [ "${soc}"    ] && echo "#define CONFIG_SYS_SOC    \"${soc}\""    >> config.h
 
-cat << EOF >> config.h
+cat << EOF >> config.h #+<configs/${BOARD_NAME}.h>
 #define CONFIG_BOARDDIR board/$BOARDDIR
 #include <config_cmd_defaults.h>
 #include <config_defaults.h>
+#include <configs/${BOARD_NAME}.h>
 #include <configs/${CONFIG_NAME}.h>
 #include <asm/config.h>
 #include <config_fallbacks.h>
 #include <config_uncmd_spl.h>
 EOF
+
+echo "DDRTYPE = ddr3" >> config.mk
+
+echo "Modified 88f6820 (armada385 custom 2) mkconfig by Tim Lauv"
+echo "Locked configure according to build.pl (so this u-boot can be used by buildroot)"
+cat config.h
+cat config.mk
 
 exit 0

@@ -77,8 +77,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB2(x)
 #endif /* DEBUG */
 
-static 	MV_VOID	mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable);
-
+static MV_VOID		mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable);
 static MV_ETHPHY_HAL_DATA ethphyHalData;
 
 /*******************************************************************************
@@ -136,23 +135,28 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	}
 
 	/* Reads ID1 */
+	//rdPhy(phyAddr, 2);
 	if (mvEthPhyRegRead(phyAddr, 2, &id1) != MV_OK) {
 		mvOsPrintf("Port%d: phyAddr=0x%x -  phy read id1 failed\n", ethPortNum, phyAddr);
 		return MV_ERROR;
 	}
 
 	/* Reads ID2 */
+	//rdPhy(phyAddr, 3);
 	if (mvEthPhyRegRead(phyAddr, 3, &id2) != MV_OK) {
 		mvOsPrintf("Port%d: phyAddr=0x%x -  phy read id2 failed\n", ethPortNum, phyAddr);
 		return MV_ERROR;
 	}
+
+	//Tim's Debug
+	//mvEthPhyRegs(phyAddr);
 
 	if (!MV_IS_MARVELL_OUI(id1, id2)) {
 		mvOsPrintf("Port%d: phyAddr=0x%x, Not Marvell PHY id1 %x id2 %x\n", ethPortNum, phyAddr, id1, id2);
 		return MV_ERROR;
 	}
 
-	deviceId = (id2 & 0x3F0) >> 4;
+	deviceId = (id2 & 0x3F0) >> 4; //id2[5 - 10]
 	switch (deviceId) {
 	case MV_PHY_88E1116:
 	case MV_PHY_88E1116R:
@@ -191,7 +195,7 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	case MV_PHY_88E1310:
 		mvEthE1310PhyBasicInit(ethPortNum);
 		break;
-	case MV_PHY_88E1512:
+	case MV_PHY_88E1512: //0x1D
 		mvEthE1512PhyBasicInit(ethPortNum);
 		break;
 	case MV_PHY_88E104X:
@@ -308,7 +312,7 @@ MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
 	if (status != MV_OK)
 		mvOsPrintf("Read failed - status = %d\n", status);
 
-	mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
+	mvOsPrintf("phy=0x%x, regOffs=%d: 0x%04x\n", phyAddr, regOffs, data);
 
 	return status;
 }
@@ -317,9 +321,13 @@ void mvEthPhyRegs(int phyAddr)
 {
 	mvOsPrintf("[ETH-PHY #%d registers]\n\n", phyAddr);
 
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_CTRL_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_STATUS_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_AUTONEGO_AD_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_CTRL_REG); //0
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_STATUS_REG); //1
+	mvOsPrintf("----MV_PHY_IDs----\n");
+	mvEthPhyRegPrint(phyAddr, 2); //2 - id1 expecting 0x0141
+	mvEthPhyRegPrint(phyAddr, 3); //3 - id2 [9-16] expecting 0x0C, [5-10] is nic idcode e.g MV_PHY_88E1512 (0x1D)
+	mvOsPrintf("------------------\n");
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_AUTONEGO_AD_REG); //4 .. see mvEthPhyRegs.h
 	mvEthPhyRegPrint(phyAddr, ETH_PHY_LINK_PARTNER_CAP_REG);
 	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_CTRL_REG);
 	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_STATUS_REG);
@@ -379,9 +387,11 @@ MV_STATUS mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data)
 	smiReg |= (phyAddr <<  ETH_PHY_SMI_DEV_ADDR_OFFS) | (regOffs << ETH_PHY_SMI_REG_ADDR_OFFS);
 	smiReg &= ~ETH_PHY_SMI_OPCODE_READ;
 
+	//Tim's Debug
+	//printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, regOffs, data);
+	//printf("%s: ethphyHalData.ethPhySmiReg = 0x%x smiReg=0x%x\n", __func__, ethphyHalData.ethPhySmiReg, smiReg);
+	
 	/* write the smi register */
-	DB(printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, regOffs, data));
-	DB(printf("%s: ethphyHalData.ethPhySmiReg = 0x%x smiReg=0x%x\n", __func__, ethphyHalData.ethPhySmiReg, smiReg));
 	MV_REG_WRITE(ethphyHalData.ethPhySmiReg, smiReg);
 
 	return MV_OK;
@@ -1124,7 +1134,7 @@ MV_VOID	mvEthE1112PhyPowerUp(MV_U32 ethPortNum)
 * RETURN:   None
 *
 *******************************************************************************/
-static MV_VOID	mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable)
+static MV_VOID mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable)
 {
 	MV_U16 reg;
 	if (enable == MV_FALSE) {

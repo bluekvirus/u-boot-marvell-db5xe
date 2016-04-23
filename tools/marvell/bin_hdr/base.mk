@@ -83,6 +83,9 @@ endif
 ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
   CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
 endif
+ifeq "$(CONFIG_CUSTOMER_BOARD_2)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_2
+endif
 ifeq "$(CONFIG_CLEARFOG_BOARD)"  "y"
   CFLAGS += -DCONFIG_CLEARFOG_BOARD
 endif
@@ -180,13 +183,18 @@ ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CFLAGS += -DCONFIG_ALLEYCAT3
 endif
 
-CROSS    = $(CROSS_COMPILE_BH)
-LD       = $(CROSS)ld
-CC       = $(CROSS)gcc
-AS       = $(CROSS)as
-OBJCOPY  = $(CROSS)objcopy
-OBJDUMP  = $(CROSS)objdump
+#quick fix to use with Buildroot.
+#ifndef CROSS_COMPILE_BH
+#CROSS_COMPILE_BH = $(CROSS_COMPILE)
+#endif
+#CROSS    = $(CROSS_COMPILE) #was CROSS_COMPILE_BH
+#LD       = $(CROSS)ld
+#CC       = $(CROSS)gcc
+#AS       = $(CROSS)as
+#OBJCOPY  = $(CROSS)objcopy
+#OBJDUMP  = $(CROSS)objdump
 HOSTCC   = gcc
+#$(info CC is $(CC))
 
 RM       = @rm -rf
 CP       = @cp
@@ -222,7 +230,7 @@ DEBUG_MODE_FLAG = no
 endif
 endif
 
-CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -mabi=aapcs
+CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -mabi=aapcs -msoft-float #using soft float-point
 
 ifeq ($(BOARD),msys_bc2)
 CFLAGS   += -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables

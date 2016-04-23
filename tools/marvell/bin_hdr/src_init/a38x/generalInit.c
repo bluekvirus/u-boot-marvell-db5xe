@@ -104,6 +104,8 @@ static MV_VOID mvDeviceIdConfig(void)
 	ctrlId = MV_REG_READ(DEV_ID_REG) & ~DEV_ID_REG_DEVICE_ID_MASK;
 	ctrlId |= dev_id_val[devId].ctrlModel << DEV_ID_REG_DEVICE_ID_OFFS;
 	MV_REG_WRITE(DEV_ID_REG, ctrlId);
+
+	mvPrintf("mvDeviceIdConfig() has dev_id: 0x%x and ctrl_id: 0x%x\n", devId, ctrlId);
 }
 
 /* mvMppConfig() prepares UART and I2C configuration (MPP's and UART interface selection) */
@@ -302,6 +304,10 @@ MV_STATUS mvGeneralInit(void)
 	MV_U32 avsVal;
 #endif
 	mvMppConfig(); /* MPP must be configured prior to UART/I2C access */
+
+	/* Disable PCIe0 & PCIe1 Ref clock out */
+	regData = (MV_REG_READ(MPP_CONTROL_REG(5)) & MPP_PCIE_SET_MASK) | MPP_PCIE_SET_DATA;
+	MV_REG_WRITE(MPP_CONTROL_REG(5), regData);
 
 	/* - Init the TWSI before all I2C transaction */
 	DEBUG_INIT_FULL_S("mvGeneralInit: Init TWSI interface.\n");

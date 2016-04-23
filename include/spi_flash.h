@@ -39,6 +39,8 @@ struct spi_flash {
 	/* Erase (sector) size */
 	u32		sector_size;
 	u8 		addr_cycles;
+	//add flag
+	u8		flag_status;
 
 	int		(*read)(struct spi_flash *flash, u32 offset,
 				size_t len, void *buf);

@@ -1238,6 +1238,18 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
 		return MV_OK;
 
+	/*TBI: setup speed leds FWF51E
+	uchar chip = 0x24; //GPIO expander (0x20,0x21?)
+	uint reg = 0x2;
+	unsigned char memvar[2] = {0xfc};
+	//printf ("Writing the iic chip: %x %x.\n",chip,reg);
+	//GPIO expander to control wan1/2 led, combined with 88E1512
+	if (i2c_write(chip, reg, 1, memvar, 1) != 0) {
+		printf("Error writing to i2c chip: %x %x.\n",chip,reg);
+		return ;
+	}
+	*/
+
 	/* update IO expander struct values before writing via I2C */
 	if (boardId == DB_GP_68XX_ID) {
 		/* fetch IO exp. 2nd value to modify - MV_ERROR: no IO expander struct entry to update*/
@@ -1275,7 +1287,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
 					    board->pIoExp[i].offset, &board->pIoExp[i].val, 1)) {
-			mvOsPrintf("%s: Write IO expander (addr=0x%x, offset=%d, value=0x%2x to  fail\n",
+			mvOsPrintf("%s: Write to GPIO expander (addr=0x%x, offset=%d, value=0x%2x) failed\n",
 				   __func__,
 				   mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr),
 				   board->pIoExp[i].offset,
@@ -2222,6 +2234,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
 		gBoardId = CUSTOMER_BOARD_ID1;
+	#elif CONFIG_CUSTOMER_BOARD_2
+		gBoardId = CUSTOMER_BOARD_ID2;
 	#elif CONFIG_CLEARFOG_BOARD
 		gBoardId = A38X_CLEARFOG_BOARD_ID;
 	#endif

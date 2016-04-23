@@ -28,6 +28,22 @@
 #define CMD_ERASE_64K			0xd8
 #define CMD_ERASE_CHIP			0xc7
 
+//add support for 4B mode
+#define CMD_WRITE_ENABLE		0x06
+#define CMD_4B_READ_ARRAY_SLOW		0x13
+#define CMD_4B_READ_ARRAY_FAST		0x0c
+#define CMD_ENTER_4BYTE			0xb7
+#define CMD_EXIT_4BYTE			0xe9
+#define CMD_4B_PAGE_PROGRAM		0x12
+#define CMD_READ_FLAG_STATUS		0x70
+#define CMD_4B_ERASE_4K			0x21
+#define CMD_4B_ERASE_64K		0xdc
+#define FLAG_STATUS_WRITE		0x10
+#define FLAG_STATUS_ERASE		0x20
+#define FLAG_STATUS_BUSY		0x80
+int flash_4bytes_mode(struct spi_flash *flash, int enable);
+
+
 /* Common status */
 #define STATUS_WIP			0x01
 

@@ -481,13 +481,12 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	usbComPhy = 0;
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
 	commPhyCfgReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
-	DB(printf("mvCtrlSerdesConfig: commPhyCfgReg=0x%x\n", commPhyCfgReg));
+	printf("%s mvCtrlSerdesConfig: Common Phy Cfg Reg=0x%x\n", __func__, commPhyCfgReg);
 	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
 		SerdesHwNum = mvCtrlGetPhysicalSerdesNum(serdesNum);
 		serdesCfgField = (commPhyCfgReg & COMPHY_SELECT_MASK(SerdesHwNum)) >> COMPHY_SELECT_OFFS(SerdesHwNum);
 		comPhyCfg = serdesCfg[SerdesHwNum][serdesCfgField];
-		DB(printf("\nserdesConfigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ",
-			  serdesCfgField, comPhyCfg, SerdesHwNum));
+		//printf("%s serdesConfigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ", __func__, serdesCfgField, comPhyCfg, SerdesHwNum);
 		ifNo = comPhyCfg & 0x0f;
 		switch (comPhyCfg & 0xF0) {
 		case SERDES_UNIT_PEX:
@@ -502,10 +501,10 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 				boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = ifNo;
 				boardPexInfo->boardPexIfNum++;
 			}
-			DB(printf("PEX, if=%d\n", ifNo));
+			//printf("PEX, if=%d\n", ifNo);
 			break;
 		case SERDES_UNIT_SATA:
-			DB(printf("SATA, if=%d\n", ifNo));
+			//printf("SATA, if=%d\n", ifNo);
 			sataIfCount++;
 			if (SerdesHwNum > 2)
 #if defined CONFIG_ARMADA_38X
@@ -529,20 +528,20 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 				if (ON_BOARD_RGMII(ifNo))
 					ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
 				ethComPhy |= SERDES_SGMII(ifNo);
-				DB(printf("SGMII, if=%d\n", ifNo));
+				//printf("SGMII, if=%d\n", ifNo);
 			}
 			break;
 		case SERDES_UNIT_USB_H:
-			DB(printf("USB_H, if=%d\n", ifNo));
+			//printf("USB_H, if=%d\n", ifNo);
 			usbComPhy |= 0X1 << ifNo;
 			usbHIfCount++;
 			break;
 		case SERDES_UNIT_USB:
-			DB(printf("USB, if=%d\n", ifNo));
+			//printf("USB, if=%d\n", ifNo);
 			usbIfCount++;
 			break;
 		case SERDES_UNIT_QSGMII:
-			DB(printf("QSGMII, if=%d\n", ifNo));
+			//printf("QSGMII, if=%d\n", ifNo);
 			qsgmiiIfCount++;
 			ethComPhy = 0; /* disable on board RGMII ports mark */
 			for (i = 0 ; i < mvCtrlEthMaxPortGet(); i++)
@@ -579,16 +578,17 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
 	   (needed by phy + giga init sequence)				*/
 	mvCtrlSocUnitInfoNumSet(ETH_GIG_ACTIVE_UNIT_ID, mvCountMaskBits(ethComPhy));
-	DB(printf("mvCtrlSocUnitGet[PEX] = %d,\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[ETH_ACTIVE] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_ACTIVE_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[USB2]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[QSGMII]= %d,\n", mvCtrlSocUnitInfoNumGet(QSGMII_UNIT_ID)));
+	printf("mvCtrlSocUnitGet[PEX] = %d,\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID));
+	printf("mvCtrlSocUnitGet[ETH_ACTIVE] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_ACTIVE_UNIT_ID));
+	printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID));
+	//printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID));
+	printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID));
+	printf("mvCtrlSocUnitGet[USB2]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID));
+	//printf("mvCtrlSocUnitGet[QSGMII]= %d,\n", mvCtrlSocUnitInfoNumGet(QSGMII_UNIT_ID));
 #ifdef CONFIG_ARMADA_39X
 	DB(printf("mvCtrlSocUnitGet[XAUI]=   %d,\n", mvCtrlSocUnitInfoNumGet(XAUI_UNIT_ID)));
 #endif
+	printf("\n");
 }
 
 /*******************************************************************************
@@ -649,7 +649,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 #endif
 
 	/* write MPP's config and Board general config */
-	mvBoardConfigWrite();
+	mvBoardConfigWrite(); //nothing, all the .pBoardSpecInit are NULL
 
 	/* disable all GPIO interrupts */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {

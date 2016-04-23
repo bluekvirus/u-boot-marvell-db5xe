@@ -310,11 +310,11 @@ void mvBoardEgigaPhyInit(void)
 				continue;
 			if ((status != MV_OK) && (status != MV_NOT_SUPPORTED)) {
 				mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
-				mvOsOutput("PHY error - shutdown port%d\n", i);
+				mvOsOutput("10G PHY error - shutdown port%d\n", i);
 			} else if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
 				mvNetaPhyAddrPollingDisable(i);
 				mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
-				mvOsOutput("PHY error - shutdown port%d\n", i);
+				mvOsOutput("GiG PHY error - shutdown port%d\n", i);
 			} else if (mvBoardIsPortInMii(i)) {
 				/* if port is MII the speed is les the 1Gbps need too change the phy advertisment */
 				mvEthPhyAdvertiseSet(phyAddr, MV_PHY_ADVERTISE_100_FULL);
@@ -342,6 +342,7 @@ void mvBoardEgigaPhyInit(void)
 					NETA_SET_FULL_DUPLEX_MASK | BIT15)/*0x9342*/);
 		}
 
+		printf("%s connected Switch 88E6%x\n", __func__, switchDeviceID);
 		/*now only E6172 switch works for NETA, so here no other switch initialization is called*/
 		if (switchDeviceID == MV_E6172_PRODUCT_NUM)
 			mvEthE6172SwitchBasicInit(0);

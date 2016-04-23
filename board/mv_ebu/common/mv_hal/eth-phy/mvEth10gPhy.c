@@ -202,7 +202,7 @@ MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	}
 
 	if (!MV_IS_MARVELL_OUI(id1, id2)) {
-		mvOsPrintf("%s: Port%d: phyAddr=0x%x, Not Marvell PHY id1 %x id2 %x\n",
+		mvOsPrintf("%s: Port%d: phyAddr=0x%x, Not Marvell 10G PHY id1 %x id2 %x\n",
 				__func__, ethPortNum, phyAddr, id1, id2);
 		return MV_ERROR;
 	}

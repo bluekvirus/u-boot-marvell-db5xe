@@ -277,6 +277,61 @@ int board_init(void)
 #endif
 	/* Init the Board environment module (device bank params init) */
 	mvBoardEnvInit();
+	/* Tim's tip: To add a new mv a38x board, go add (7x.h 5x.c 1x.mk 1x.cfg)
+		/board/mv_ebu/a38x
+		1. mvBoardEnvSpec.h -- 
+				+board ID, 
+				extend max ID limit
+		2. mvBoardEnvSpec38x.h -- 
+				+board ID, 
+				+MPP map, 
+				+GPP out and polar
+		3. mvBoardEnvSpec38x.c -- (* note that BoardDeCsInfo, InfoBoardUsbInfo, BoardMacInfo now have !flags!)
+				+board_info based on the 2x .h
+				put &board_info into customerBoardInfoTbl[] (match board ID as index)
+				+check BoardDeCsInfo, InfoBoardUsbInfo, BoardMacInfo, BoardTwsiDev and IoExpanderInfo
+				+GPIO/MPP init in _gpp_callback() (e.g for switch, eth and pcie)
+		4. mvBoardEnvLib.c --
+				+board ID to mvBoardIdGet()
+		10. mvBoardEnvLib38x.h --
+				+MV_MODULE_INFO enables individual module by **boardID mod 16**
+				+MV_SAR_INFO enables individual bit by **boardID mod 16**
+		
+		/include/configs
+		5. armada_38x.h --
+				+board ID for customer_board_support detect
+		
+		/tools/marvell/bin_hdr (ROM_hdr + bin_hdr(s), REG_hdr(s) + u-boot.bin = boot device image)
+		6. ddr3_a38x_vars.h --
+				+board ddr3 spec to customer_board_support
+		7. base.mk --
+				+board ID to CFLAGS (for building required bin_hdr)
+			
+		/tools/marvell/bin_hdr/platform/sysEnv/a38x (same as board env in 1-4, but for bin_hdr, same code...OMZ..OMFG)
+		8. mvSysEnvLib.c --
+				+board ID to mvBoardIdGet()
+				(also watch for mvSysEnvSocUnitNums)
+		9. mvSysEnvLib.h --
+				+board ID, 
+				extend max ID limit
+				+MV_DEVICE_ID_VAL_INFO
+				+MPP_* macro (used in generalInit.c)
+
+		/tools/marvell/bin_hdr/src_init/a38x
+		11. generalInit.c --
+				+special init on GPIOs/MPPs
+
+		/tools/marvell/bin_hdr/src_phy/a38x
+		12. mvHighSpeedTopologySpec-38x.c
+				+PHY topology (serdes lanes, defines serdes reg!)
+
+		/tools/marvell/bin_hdr/inc/ddr3_soc/a38x
+		13. ddr3_a38x_topology.h
+				+memory topology
+
+		don't forget to change board.cfg!
+		don't forget to add /drivers (e.g drivers/mtd/spi/macronix)
+	*/
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
@@ -808,9 +863,9 @@ void misc_init_r_env(void)
 
 #if defined(MV_INCLUDE_USB)
 	/* USB Host */
-	env = getenv("usb0Mode");
+	env = getenv("usb1Mode");
 	if (!env)
-		setenv("usb0Mode", ENV_USB0_MODE);
+		setenv("usb1Mode", ENV_USB1_MODE);
 	env = getenv("usbActive");
 	if (!env)
 		setenv("usbActive", ENV_USB_ACTIVE);
@@ -1106,9 +1161,8 @@ int misc_init_r(void)
 
 	setenv("pcieTune", "no");
 
-
-
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
+	//all gpp reset moved to mvBoardEnvSpec38x.c A38x_CUSTOMER_2_BOARD_gpp_callback
 	mvBoardEgigaPhyInit();
 #endif
 #if defined(CONFIG_CMD_DATE)

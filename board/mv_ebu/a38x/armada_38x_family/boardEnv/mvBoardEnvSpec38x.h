@@ -66,6 +66,7 @@
 #define CUTOMER_BOARD_ID_BASE                   A38X_CUTOMER_BOARD_ID_BASE
 #define CUSTOMER_BOARD_ID0			A38X_CUSTOMER_BOARD_ID0
 #define CUSTOMER_BOARD_ID1			A38X_CUSTOMER_BOARD_ID1
+#define CUSTOMER_BOARD_ID2       A38X_CUSTOMER_BOARD_ID2
 #define MV_MAX_CUSTOMER_BOARD_ID                A38X_MV_MAX_CUSTOMER_BOARD_ID
 #define MV_CUSTOMER_BOARD_NUM                   A38X_MV_CUSTOMER_BOARD_NUM
 
@@ -118,6 +119,79 @@
 #define A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID	0x0
 #define A38x_CUSTOMER_BOARD_1_GPP_POL_LOW		0x0
 #define A38x_CUSTOMER_BOARD_1_GPP_POL_MID		0x0
+
+/*******************************************************************************
+ * A38x Customer Board 2 - Based on RD-AP - FGT/FWF5XE (GPIO/MPP layout)
+ *******************************************************************************/
+/*
+   MPP#     Type  DEFAULT UNIT              MPP Values (respectively)
+   -----------------------------------------------------------------------------------
+   0-1      I/O   UART0          1
+   2-3      I/O   I2C0           1
+   4-5      I/O   SMI ( MDC/MDIO )     1
+   6-17     I/O   GE0            1
+   18    I  6176_INT       0
+   19    O  6176_RST_L        0  
+   20    I  1512A_INT         0
+   21    I/O   SDIO           4
+   22    O  PCIe_WDisable        0
+   23    O  1512A_RST_L       0
+   24-28 I/O   SDIO           4
+   29    N/A   N/A            0
+   30    O  Alarm_Yellow_Led     0
+   31    N/A   N/A            0
+   32    O  HA_Led_Green         0
+   33    O  Status_Red_Led       0
+   34    O  1512B_RST_L       0
+   35    O  HA_Led_Red        0
+   36    I  OC_detect         O
+   37-40 I/O   SDIO           4
+   41    I  1512B_INT         0
+   42    O  eMMC_RST       0
+   43    O  M_VTT_CTRL (out)     2
+   44    I  SATA0_PRESENT_ACTIVEn      1
+   45    O  Alarm_Red_Led        0
+   46    O  PCIe1_RST_OUTn       0
+   47    O  Status_Green_Led     0
+   48-49 I/O   PCIe0/1_CLKREQ       6
+   50    I  PCIe1_Waken       0
+   51    O  USB3_CfgCurrentLim      0
+   52    O  PCIE0_RST_OUTn       0
+   53    O  USB3_VBUS_EN         0
+   54    I  DEF_CONFIG_RST_L     0
+   55-59 I/O   SPI1           4
+   60-63 N/A   N/A            0
+*/
+
+#define A38x_CUSTOMER_BOARD_2_MPP0_7      0x11111111
+#define A38x_CUSTOMER_BOARD_2_MPP8_15     0x11111111
+#define A38x_CUSTOMER_BOARD_2_MPP16_23    0x00400011
+#define A38x_CUSTOMER_BOARD_2_MPP24_31    0x00044444
+#define A38x_CUSTOMER_BOARD_2_MPP32_39    0x44400000
+#define A38x_CUSTOMER_BOARD_2_MPP40_47    0x00012004
+#define A38x_CUSTOMER_BOARD_2_MPP48_55    0x40000066
+#define A38x_CUSTOMER_BOARD_2_MPP56_63    0x00004444
+
+#define A38x_CUSTOMER_BOARD_2_GPP_OUT_ENA_LOW   (~(BIT19 | BIT22 | BIT23 | BIT30))
+#define A38x_CUSTOMER_BOARD_2_GPP_OUT_ENA_MID   (~(BIT0 | BIT1 | BIT2 | BIT3 | BIT10 | BIT11 | BIT13 | \
+                     BIT14 | BIT15 | BIT16 | BIT17 | BIT19 | BIT20 | BIT21))
+#define A38x_CUSTOMER_BOARD_2_GPP_OUT_VAL_LOW   (BIT19 | BIT22 | BIT30)
+#define A38x_CUSTOMER_BOARD_2_GPP_OUT_VAL_MID   (BIT0 | BIT1 | BIT3 | BIT10 | BIT11 | BIT13 | BIT14 | BIT15 | \
+                   BIT16 | BIT17 | BIT19 | BIT20)
+#define A38x_CUSTOMER_BOARD_2_GPP_POL_LOW 0x0
+#define A38x_CUSTOMER_BOARD_2_GPP_POL_MID 0x0
+
+//FGT52E SATA LED on MPP21 and MPP48 (not in use)
+#ifdef CONFIG_CUSTOMER_BOARD_3
+#undef A38x_CUSTOMER_BOARD_2_MPP16_23
+#undef A38x_CUSTOMER_BOARD_2_MPP48_55
+#undef A38x_CUSTOMER_BOARD_2_GPP_OUT_ENA_LOW
+
+#define A38x_CUSTOMER_BOARD_2_MPP16_23          0x00000011
+#define A38x_CUSTOMER_BOARD_2_MPP48_55    0x40000060
+
+#define A38x_CUSTOMER_BOARD_2_GPP_OUT_ENA_LOW   (~(BIT19 | BIT21 | BIT22 | BIT23 | BIT30))
+#endif
 
 
 /******************************* SolidRun Board *******************************/

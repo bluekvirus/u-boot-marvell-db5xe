@@ -73,6 +73,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* #define MV_DEBUG */
 /* defines  */
+#undef MV_DEBUG
 #ifdef MV_DEBUG
 #define DB(x)	x
 #else

@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 # MA 02111-1307 USA
 #
-PLATFORM_RELFLAGS += -fno-common -ffixed-r8 -msoft-float
+PLATFORM_RELFLAGS += -fno-common -ffixed-r8 -msoft-float #using soft float-point
 
 # If armv7-a is not supported by GCC fall-back to armv5, which is
 # supported by more tool-chains
@@ -34,7 +34,7 @@ PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV7)
 # =========================================================================
 PF_RELFLAGS_SLB_AT := $(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))
 PLATFORM_RELFLAGS += $(PF_RELFLAGS_SLB_AT)
-PLATFORM_CPPFLAGS += -march=armv7-a 
+#PLATFORM_CPPFLAGS += -march=armv7-a #don't restate it see above
 # SEE README.arm-unaligned-accesses
 PF_NO_UNALIGNED := $(call cc-option, -mno-unaligned-access,)
 PLATFORM_NO_UNALIGNED := $(PF_NO_UNALIGNED)

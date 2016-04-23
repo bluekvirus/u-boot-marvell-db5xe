@@ -108,7 +108,7 @@ CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 CDEBUG_OBJ = $(subst .c,.debug.o,$(CSRC_DEBUG))
 
 
-all:   $(TGT) $(TGT_UART) $(TGT_DEBUG)
+all:   $(TGT) $(TGT_UART) ##$(TGT_DEBUG)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<

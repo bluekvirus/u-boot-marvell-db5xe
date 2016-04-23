@@ -68,7 +68,7 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
-#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD)
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CUSTOMER_BOARD_2) || defined (CONFIG_CLEARFOG_BOARD)
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
@@ -290,9 +290,10 @@ extern unsigned int mvUartPortGet(void);
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_STMICRO
 	#define CONFIG_SPI_FLASH_MACRONIX
+	#define CONFIG_SPI_FLASH_SPANSION
 	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_ENV_SPI_MAX_HZ           50000000
-	#define CONFIG_ENV_SPI_CS               0
+	#define CONFIG_ENV_SPI_CS               0 //cs0
 	#define CONFIG_ENV_SPI_BUS              mvBoardSpiBusGet()
 
 #if defined(MV_SEC_64K)
@@ -466,7 +467,7 @@ extern int nand_get_env_offs(void);
 #define CONFIG_SYS_PROMPT_HUSH_PS2      "> "
 
 #define CONFIG_SYS_LONGHELP                                                                     /* undef to save memory		*/
-#define CONFIG_SYS_PROMPT               "Marvell>> "                                            /* Monitor Command Prompt	*/
+#define CONFIG_SYS_PROMPT               "FWF51E-CUSTOM>> "                                            /* Monitor Command Prompt	*/
 #define CONFIG_SYS_CBSIZE               1024                                                    /* Console I/O Buffer Size	*/
 #define CONFIG_SYS_PBSIZE               (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)    /* Print Buffer Size */
 
@@ -482,12 +483,12 @@ extern int nand_get_env_offs(void);
 #endif
 /* to change the default ethernet port, use this define (options: 0, 1, 2) */
 #define CONFIG_NET_MULTI
-#define CONFIG_IPADDR		10.4.50.170
-#define CONFIG_SERVERIP		10.4.50.38
+#define CONFIG_IPADDR		192.168.0.51
+#define CONFIG_SERVERIP		192.168.0.1
 #define CONFIG_NETMASK		255.255.255.0
-#define ETHADDR			"00:00:00:00:51:81"
-#define ETH1ADDR		"00:00:00:00:51:82"
-#define ENV_ETH_PRIME		"egiga0"
+#define CONFIG_ETHADDR		08:5b:0e:ea:97:12
+#define CONFIG_ETH1ADDR		08:5b:0e:ea:97:13
+#define ENV_ETH_PRIME		"egiga1"
 
 /*
  * PCI and PCIe
@@ -507,13 +508,13 @@ extern int nand_get_env_offs(void);
 	#define CONFIG_EHCI_IS_TDI
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION
-	#define ENV_USB0_MODE   "host"
+	#define ENV_USB1_MODE   "host"
 #ifdef CONFIG_CLEARFOG_BOARD
 	#define ENV_USB_ACTIVE        "1"
 	#define ENV_USB_MODE          "3"	/* 3 = USB3.0 | 2 = USB2.0 */
 #else
-	#define ENV_USB_ACTIVE        "0"
-	#define ENV_USB_MODE          "2"	/* 3 = USB3.0 | 2 = USB2.0 */
+	#define ENV_USB_ACTIVE        "1"
+	#define ENV_USB_MODE          "3"	/* 3 = USB3.0 | 2 = USB2.0 */
 #endif
 
 	#define CONFIG_USB_HOST_ETHER
@@ -615,7 +616,7 @@ extern int nand_get_env_offs(void);
 /*
  * Auto boot
  */
-#define CONFIG_BOOTDELAY                3
+#define CONFIG_BOOTDELAY                -1
 #define CONFIG_ROOTPATH                 "/srv/nfs/"             /* Default Dir for NFS */
 #define CONFIG_SYS_BARGSIZE             CONFIG_SYS_CBSIZE       /* Boot Argument Buffer Size */
 

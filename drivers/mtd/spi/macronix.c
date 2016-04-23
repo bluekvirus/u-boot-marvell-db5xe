@@ -91,6 +91,12 @@ static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 		.addr_cycles = 3,
 		.name = "MX25L12855E",
 	},
+	{
+		.idcode = 0x201B,
+		.nr_blocks = 2048,
+		.addr_cycles = 4,
+		.name = "MX66L1G45G",
+	},
 };
 
 struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
