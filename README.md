@@ -31,4 +31,7 @@ sudo minicom -D /dev/ttyS0 -b 115200
 sudo minicom -D /dev/ttyUSB0 -b 115200
 ```
 
-
+License
+-------
+Copyright 2016 Tim Lauv. 
+Under the [MIT](http://opensource.org/licenses/MIT) License.
