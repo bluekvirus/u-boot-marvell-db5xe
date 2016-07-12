@@ -34,4 +34,4 @@ sudo minicom -D /dev/ttyUSB0 -b 115200
 License
 -------
 Copyright 2016 Tim Lauv. 
-Under the [MIT](http://opensource.org/licenses/MIT) License.
+Under the [GPL v2](https://opensource.org/licenses/GPL-2.0) License.
