@@ -16,6 +16,8 @@ Things needs soft reset
 2. Wifi, pci-E reset in board header before u-boot init; (not yet)
 3. PHYs and Switch, reset in u-boot init (done);
 
+Note that, if you unplug the power cord, it is a hard reset. You don't need the above resets.
+
 Develop
 -------
 0. Invalid bit 0-8 on the SPI-Flash (ROM hard wired to read this as valid boot device record)
