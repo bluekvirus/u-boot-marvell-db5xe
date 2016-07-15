@@ -18,12 +18,18 @@ Things needs soft reset
 
 Note that, if you unplug the power cord, it is a hard reset. You don't need the above resets.
 
-Develop
--------
+Hack it open
+------------
 0. Invalid bit 0-8 on the SPI-Flash (ROM hard wired to read this as valid boot device record)
-1. Trigger rescue boot-squence
+1. Trigger rescue boot-squence (see `/tools/marvell/doimage_mv/pattern.py`)
 2. Use *modified* xmodem over serial port to upload boot firmware (header:u-boot:env).
 3. Use `dnsmasq` with TFTP for uploading os(kernel), devicetree and initramfs.
+
+Develop
+-------
+1. `/tools/marvell/bin_hdr/src_phy/` -- board SERDES Lanes topology
+2. `/board/mv_ebu/a38x/armada_38x_family/boardEnv/` -- board init hooks implementation
+3. `/drivers/mtd/spi/` -- SPI-Flash 4B mode support (for upgrading *this*)
 
 Debug
 -----
