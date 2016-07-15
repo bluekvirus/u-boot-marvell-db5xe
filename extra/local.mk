@@ -1,0 +1,1 @@
+UBOOT_OVERRIDE_SRCDIR = /home/tim/Projects/u-boot-marvell/

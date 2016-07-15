@@ -1,0 +1,810 @@
+/dts-v1/;
+
+/*
+	For FWF51E - by Tim Lauv, 4.4.3+
+	@updated 05.16.2016
+*/
+
+/ {
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+	model = "Marvell Armada 38x Reference Design";
+	compatible = "marvell,a388-rd", "marvell,armada388", "marvell,armada385", "marvell,armada380";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		gpio0 = "/soc/internal-regs/gpio@18100";
+		gpio1 = "/soc/internal-regs/gpio@18140";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x80000000>;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		enable-method = "marvell,armada-380-smp";
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+			resets = <0xb 0x0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+			resets = <0xb 0x1>;
+		};
+	};
+
+	soc {
+		compatible = "marvell,armada380-mbus", "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x1>;
+		controller = <0x1>;
+		interrupt-parent = <0x2>;
+		pcie-mem-aperture = <0xe0000000 0x8000000>;
+		pcie-io-aperture = <0xe8000000 0x100000>;
+		ranges = <0xf0010000 0x0 0xf1000000 0x100000 0x11d0000 0x0 0xfff00000 0x100000>;
+
+		bootrom {
+			compatible = "marvell,bootrom";
+			reg = <0x11d0000 0x0 0x200000>;
+		};
+
+		cesa-sram {
+			compatible = "marvell,cesa-sram";
+			reg = <0x9010000 0x0 0x10000 0x9050000 0x0 0x10000>;
+		};
+
+		/*NOT USED*/
+		devbus-bootcs {
+			compatible = "marvell,mvebu-devbus";
+			reg = <0xf0010000 0x10400 0x8>;
+			ranges = <0x0 0x12f0000 0x0 0xffffffff>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			clocks = <&coreclk 0x0>;
+			status = "disabled";
+		};
+
+		/*NOT USED*/
+		devbus-cs0 {
+			compatible = "marvell,mvebu-devbus";
+			reg = <0xf0010000 0x10408 0x8>;
+			ranges = <0x0 0x13e0000 0x0 0xffffffff>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			clocks = <&coreclk 0x0>;
+			status = "disabled";
+		};
+
+		/*NOT USED*/
+		devbus-cs1 {
+			compatible = "marvell,mvebu-devbus";
+			reg = <0xf0010000 0x10410 0x8>;
+			ranges = <0x0 0x13d0000 0x0 0xffffffff>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			clocks = <&coreclk 0x0>;
+			status = "disabled";
+		};
+
+		/*NOT USED*/
+		devbus-cs2 {
+			compatible = "marvell,mvebu-devbus";
+			reg = <0xf0010000 0x10418 0x8>;
+			ranges = <0x0 0x13b0000 0x0 0xffffffff>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			clocks = <&coreclk 0x0>;
+			status = "disabled";
+		};
+
+		/*NOT USED*/
+		devbus-cs3 {
+			compatible = "marvell,mvebu-devbus";
+			reg = <0xf0010000 0x10420 0x8>;
+			ranges = <0x0 0x1370000 0x0 0xffffffff>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			clocks = <&coreclk 0x0>;
+			status = "disabled";
+		};
+
+		/* 
+			Distributed Switch Architecture.
+			For MV88E6176 switch attached at MAC0 (eth0--[rgmii]--port6) and using MDIO2 (PHY control 0x2):
+			
+			CONFIG_HAVE_NET_DSA=y
+			CONFIG_NET_DSA=y
+			CONFIG_NET_DSA_HWMON=y
+			CONFIG_NET_DSA_TAG_EDSA=y
+			CONFIG_NET_DSA_MV88E6XXX=y
+			CONFIG_NET_DSA_MV88E6352=y
+
+			It is important to read the /networking/dsa/dsa.txt in Linux Documentation.
+		*/
+		dsa@0 {
+			compatible = "marvell,dsa";
+			#address-cells = <2>;
+			#size-cells = <0>;
+
+			dsa,ethernet = <&eth0>;
+			dsa,mii-bus = <&mdio>;
+
+			/*You can have 4 (MAX) Switches as DSA children*/
+			switch@0 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x2 0>;	/*linked by MDIO (PHY control) register 2, switch 0 in tree */
+				status = "okay";
+
+				port@0 {
+					reg = <0>;
+					label = "lan1";
+				};
+
+				port@1 {
+					reg = <1>;
+					label = "lan2";
+				};
+
+				port@2 {
+					reg = <2>;
+					label = "lan3";
+				};
+
+				port@3 {
+					reg = <3>;
+					label = "lan4";
+				};
+
+				port@4 {
+					reg = <4>;
+					label = "lan5";
+				};
+
+				port@6 {
+					reg = <6>;
+					label = "cpu"; /*rgmii*/
+				};
+			};
+		};
+
+		internal-regs {
+			compatible = "simple-bus";
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			ranges = <0x0 0xf0010000 0x0 0x100000>;
+
+			coherency-fabric@21010 {
+				compatible = "marvell,armada-380-coherency-fabric";
+				reg = <0x21010 0x1c>;
+			};
+
+			coreclk: mvebu-sar@18600 {
+				compatible = "marvell,armada-380-core-clock";
+				reg = <0x18600 0x4>;
+				#clock-cells = <0x1>;
+				linux,phandle = <0x3>;
+				phandle = <0x3>;
+			};
+
+			corediv-clock@e4250 {
+				compatible = "marvell,armada-38x-corediv-clock";
+				reg = <0xe4250 0x8>;
+				#clock-cells = <0x1>;
+				clocks = <0x4>;
+				clock-output-names = "nand";
+				linux,phandle = <0x9>;
+				phandle = <0x9>;
+			};
+
+			cpurst@20800 {
+				compatible = "marvell,armada-370-cpu-reset";
+				reg = <0x20800 0x10>;
+				#reset-cells = <0x1>;
+				linux,phandle = <0xb>;
+				phandle = <0xb>;
+			};
+
+			mdio: mdio@72004 {
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				compatible = "marvell,orion-mdio";
+				reg = <0x72004 0x4>;
+				clocks = <&gateclk 4>;
+
+				/*PHY control registers*/
+                phy0: ethernet-phy@0 {
+                    reg = <0x0>;
+                    linux,phandle = <0x8>;
+                    phandle = <0x8>;
+                };
+
+                phy1: ethernet-phy@1 {
+                    reg = <0x1>;
+                    linux,phandle = <0x10>;
+                    phandle = <0x10>;
+                };
+
+                /*
+                	NO direct PHY connected to 0x2, but a switch (internal MAC + PHY).
+                	(see above /soc/dsa@0/switch@0/reg)
+
+	                phy2: ethernet-phy@2 {
+	                    reg = <0x2>;
+	                };
+                */
+			};
+
+			/*NOT USED*/
+			mdio@32004 {
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				compatible = "marvell,orion-mdio";
+				reg = <0x32004 0x4>;
+				status = "disabled";
+			};
+
+			/*NOT USED*/
+			mdio@36004 {
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				compatible = "marvell,orion-mdio";
+				reg = <0x36004 0x4>;
+				status = "disabled";
+			};
+
+			gpio0: gpio@18100 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x18100 0x40>;
+				ngpios = <0x20>;
+				gpio-controller;
+				#gpio-cells = <0x2>;
+				interrupt-controller;
+				#interrupt-cells = <0x2>;
+				interrupts = <0x0 0x35 0x4 0x0 0x36 0x4 0x0 0x37 0x4 0x0 0x38 0x4>;
+			};
+	
+			gpio1: gpio@18140 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x18140 0x40>;
+				ngpios = <0x1c>;
+				gpio-controller;
+				#gpio-cells = <0x2>;
+				interrupt-controller;
+				#interrupt-cells = <0x2>;
+				interrupts = <0x0 0x3a 0x4 0x0 0x3b 0x4 0x0 0x3c 0x4 0x0 0x3d 0x4>;
+			};
+
+		    leds { 
+			   compatible = "gpio-leds";
+			   status_led_green {
+				   lable = "status_led_green";
+				   gpios = <&gpio1 1 1>;
+				   default-state = "off";
+			   };
+			   alarm_led_amber {
+				   lable = "alarm_led_amber";
+				   gpios = <&gpio1 13 1>;
+				   default-state = "off";
+			   };
+			   ha_led_green {
+				   lable = "ha_led_green";
+				   gpios = <&gpio1 3 1>;
+				   default-state = "off";
+			   };
+			   status_led_red {
+				   lable = "status_led_red";
+				   gpios = <&gpio1 15 1>;
+				   default-state = "off";
+			   };
+			   alarm_led_red {
+				   lable = "alarm_led_red";
+				   gpios = <&gpio0 30 1>;
+				   default-state = "off";
+			   };
+			   ha_led_red {
+				   lable = "ha_led_red";
+				   gpios = <&gpio1 0 1>;
+				   default-state = "off";
+			   };
+		    };
+
+		    /*
+		    	MAC(s) or port(s) needs a `phy` as a phandle to the MDIO (PHY control) register to pull configure from the PHY, if there is no directly connected PHY but a switch (like our case for eth0), you need to omit the `phy` property so the driver will go ahead and read the `fixed-link` property. This is how the link between the MAC and switch (MAC + PHYs) stays up.
+
+		    	see /drivers/net/ethernet/marvell/mvneta.c (...of_phy_is_fixed_link()...)
+		    */
+		    /*MAC0*/
+			eth0: ethernet@70000 {
+				/*'compatible' attr required even it is the MAC connected directly to switch*/
+				compatible = "marvell,armada-370-neta";
+				reg = <0x70000 0x4000>;
+				interrupts-extended = <0x5 0x8>;
+				clocks = <&gateclk 0x4>;
+				status = "okay";
+				mac-address = [00 50 43 02 02 01];
+				eth,port-num = <0x0>;
+				eth,port-mtu = <1500>;				
+				reset-gpio = <&gpio0 19 1>;
+				
+				phy-mode = "rgmii"; /*Caveat: still need this link mode here...*/
+				/*phy = <&phyX>; no direct (MDIO controlled) PHY, use fixed-link*/
+				fixed-link {
+					speed = <1000>;
+					full-duplex;
+				};
+			};
+
+			/*MAC1*/
+			eth1: ethernet@30000 {
+				compatible = "marvell,armada-370-neta";
+				reg = <0x30000 0x4000>;
+				interrupts-extended = <0x5 0xa>;
+				clocks = <&gateclk 0x3>;
+				status = "okay";
+				mac-address = [00 50 43 02 02 02];
+				eth,port-num = <0x1>;
+				eth,port-mtu = <0x5dc>;
+				phy = <&phy0>; /*MDIO (PHY control) register 0*/
+				phy-mode = "sgmii";
+				reset-gpio = <&gpio0 23 1>;
+			};
+
+			/*MAC2*/
+            eth2: ethernet@34000 {
+                compatible = "marvell,armada-370-neta";
+                reg = <0x34000 0x4000>;
+                interrupts-extended = <0x5 0xc>;
+                clocks = <&gateclk 0x2>;
+                status = "okay";
+                mac-address = [00 50 43 02 02 04];
+                eth,port-num = <0x2>;
+                eth,port-mtu = <0x5dc>;
+				phy = <&phy1>; /*MDIO (PHY control) register 1*/
+				phy-mode = "sgmii";
+				reset-gpio = <&gpio1 2 1>;
+            };
+
+			gateclk: clock-gating-control@18220 {
+				compatible = "marvell,armada-380-gating-clock";
+				reg = <0x18220 0x4>;
+				clocks = <&coreclk 0x0>;
+				#clock-cells = <0x1>;
+				linux,phandle = <0x6>;
+				phandle = <0x6>;
+			};
+
+			i2c@11000 {
+				compatible = "marvell,mv64xxx-i2c";
+				reg = <0x11000 0x20>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				interrupts = <0x0 0x2 0x4>;
+				timeout-ms = <0x3e8>;
+				clocks = <&coreclk 0x0>;
+				status = "okay";
+				clock-frequency = <0x186a0>;
+
+				pca9555: pca9555@24 { 
+					compatible = "nxp,pca9555";
+					reg = <0x24>;     
+					gpio-controller;  
+					#gpio-cells = <2>;
+				};  		   
+			};
+
+			i2c@11100 {
+				compatible = "marvell,mv64xxx-i2c";
+				reg = <0x11100 0x20>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				interrupts = <0x0 0x3 0x4>;
+				timeout-ms = <0x3e8>;
+				clocks = <&coreclk 0x0>;
+				status = "okay";
+				clock-frequency = <0x186a0>;
+			};
+
+			interrupt-controller@1e001000 {
+				compatible = "arm,cortex-a9-gic";
+				#interrupt-cells = <0x3>;
+				#size-cells = <0x0>;
+				interrupt-controller;
+				reg = <0xd000 0x1000 0xc100 0x100>;
+				linux,phandle = <0x2>;
+				phandle = <0x2>;
+			};
+
+			cache-controller {
+				compatible = "arm,pl310-cache";
+				reg = <0x8000 0x1000>;
+				cache-unified;
+				cache-level = <0x2>;
+			};
+
+			mbus-controller@20000 {
+				compatible = "marvell,mbus-controller";
+				reg = <0x20000 0x100 0x20180 0x20>;
+				linux,phandle = <0x1>;
+				phandle = <0x1>;
+			};
+
+			interrupt-controller@20000 {
+				compatible = "marvell,mpic";
+				reg = <0x20a00 0x2d0 0x21070 0x58>;
+				#interrupt-cells = <0x1>;
+				#size-cells = <0x1>;
+				interrupt-controller;
+				msi-controller;
+				interrupts = <0x1 0xf 0x4>;
+				linux,phandle = <0x5>;
+				phandle = <0x5>;
+			};
+
+			pinctrl {
+				compatible = "marvell,mv88f6820-pinctrl";
+				reg = <0x18000 0x20>;
+
+                pinctrl-names = "default";
+                pinctrl-0 = <&gpio_pins>;
+
+                gpio_pins:default {
+	                marvell,pins = "mpp18","mpp19","mpp22","mpp23","mpp32","mpp46","mpp49";
+	                marvell,function = "gpio";
+                };
+			};
+
+			pmsu@22000 {
+				compatible = "marvell,armada-380-pmsu";
+				reg = <0x22000 0x1000>;
+			};
+
+            pm {
+                compatible = "marvell,armada-380-pm";
+                reg = <0x1400 0x310>, <0x18000 0x200>;
+            };
+
+            rtc@a3800 {
+				compatible = "marvell,armada-380-rtc";
+				reg = <0xa3800 0x20>, <0x184a0 0x0c>;
+				reg-names = "rtc", "rtc-soc";
+                interrupts = <0 21 0x4>;
+            };
+
+			sata@a8000 {
+				compatible = "marvell,armada-380-ahci";
+				reg = <0xa8000 0x2000>;
+				interrupts = <0x0 0x1a 0x4>;
+				clocks = <&gateclk 0xf>;
+				status = "okay";
+			};
+
+			/*NOT USED*/
+			sata@e0000 {
+				compatible = "marvell,armada-380-ahci";
+				reg = <0xe0000 0x2000>;
+				interrupts = <0x0 0x1c 0x4>;
+				clocks = <&gateclk 0x1e>;
+				status = "disabled";
+			};
+
+			scu@c000 {
+				compatible = "arm,cortex-a9-scu";
+				reg = <0xc000 0x58>;
+			};
+
+			serial@12000 {
+				compatible = "snps,dw-apb-uart";
+				reg = <0x12000 0x100>;
+				reg-shift = <0x2>;
+				interrupts = <0x0 0xc 0x4>;
+				reg-io-width = <0x1>;
+				status = "okay";
+				clock-frequency = <0xEE6B280>;
+			};
+
+			/*NOT USED*/
+			serial@12100 {
+				compatible = "snps,dw-apb-uart";
+				reg = <0x12100 0x100>;
+				reg-shift = <0x2>;
+				interrupts = <0x0 0xd 0x4>;
+				reg-io-width = <0x1>;
+				status = "disabled";
+			};
+
+			/*NOT USED*/
+			spi@10600 {
+				compatible = "marvell,armada-380-spi", "marvell,orion-spi";
+				reg = <0x10600 0x50>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				cell-index = <0x0>;
+				interrupts = <0x0 0x1 0x4>;
+				clocks = <&coreclk 0x0>;
+				status = "disabled";
+			};
+
+			spi@10680 {
+				compatible = "marvell,armada-380-spi", "marvell,orion-spi";
+				reg = <0x10680 0x50>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				cell-index = <0x1>;
+				interrupts = <0x0 0x3f 0x4>;
+				clocks = <&coreclk 0x0>;
+				status = "okay";
+
+                spi-flash@0 {
+                    #address-cells = <0x1>;
+                    #size-cells = <0x1>;
+                    compatible = "mx66l1g45g", "jedec,spi-nor";
+                /*
+                	compatible = "mx66l1g45g";
+                	(-- uboot/drivers/mtd/spi/macronix.c (bios/bootloader)* +model, +4B mode)
+                	-- linux/drivers/mtd/spi-nor/spi-nor.c (os/kernel)* 
+                		+c2,20,1b copy ~55g
+                		-`static` before spi_nor_wait_till_ready()
+                	-- linux/drivers/mtd/devices/m25p80.c (os/kernel)* 
+                		```+++m25p_shutdown()
+							static int m25p_shutdown(struct spi_device *spi)
+							{
+								struct m25p	*flash = spi_get_drvdata(spi);
+
+								if ((&flash->spi_nor)->addr_width > 3){
+									flash->command[0] = SPINOR_OP_EX4B;
+									spi_write(flash->spi, flash->command, 1);
+									spi_nor_wait_till_ready(&flash->spi_nor);
+								}
+							}
+                		```
+                		```+++m25p80_driver
+                			.shutdown = m25p_shutdown
+                		```
+                		Also need to expose `spi_nor_wait_till_ready()` from <linux/mtd/spi-nor.h>
+
+                	Note: reboot (cli) will leave the device at 4B mode, which is unrecognizable by bootrom, re-plug for a hard-reset or modify kernel driver for a device soft-reset before remove...
+                */
+                    reg = <0x0>;
+                    spi-max-frequency = <0x2FAF080>;
+
+                /*
+                	SPI-NOR Flash (MTD) Partitions
+                	Note: there is no partition table for it (always re-defined by current *os*)
+                */
+
+                    /*BIOS + BOOTLOADER (with ENV)*/
+					partition@uboot {
+						/*6MB - can contain 3 (bootloader + env) pairs*/
+						label = "uboot";
+						reg = <0x0 0x600000>;
+						/*devicetree blog is appended at the bottom of 6MB*/
+					};
+
+					/*IMAGE A (30MB) - Linux + RootFS/Initramfs*/
+					partition@kn1 {
+						/*6MB*/
+						label = "kn1";
+						reg = <0x600000 0x600000>;
+					};
+					partition@rfs1{
+						/*24MB*/
+						label = "rfs1";
+						reg = <0xc00000 0x1800000>;
+					};
+
+					/*IMAGE B (30MB) - Linux + RootFS/Initramfs*/
+					partition@kn2 {
+						/*6MB*/
+						label = "kn2";
+						reg = <0x2400000 0x600000>;
+					};
+					partition@rfs2{
+						/*24MB*/
+						label = "rfs2";
+						reg = <0x2a00000 0x1800000>;
+					};
+
+					/*IMAGE C (30MB) - Linux + Initramfs (Recovery)*/
+					partition@kn3 {
+						/*6MB*/
+						label = "kn3";
+						reg = <0x4200000 0x600000>;
+					};
+					partition@rfs3{
+						/*24MB*/
+						label = "rfs3";
+						reg = <0x4800000 0x1800000>;
+					};
+
+					/*General Data (metadata, daemon-configure, crashdump)*/
+					partition@data{
+						/*32MB*/
+						label = "data";
+						reg = <0x6000000 0x2000000>;
+					};
+                };
+			};
+
+			system-controller@18200 {
+				compatible = "marvell,armada-380-system-controller", "marvell,armada-370-xp-system-controller";
+				reg = <0x18200 0x100>;
+			};
+
+			timer@c600 {
+				compatible = "arm,cortex-a9-twd-timer";
+				reg = <0xc600 0x20>;
+				interrupts = <0x1 0xd 0x301>;
+				clocks = <&coreclk 0x2>;
+			};
+
+			usb@50000 {
+				compatible = "marvell,orion-ehci";
+				reg = <0x58000 0x500>;
+				interrupts = <0x0 0x12 0x4>;
+				clocks = <&gateclk 0x12>;
+				status = "okay";
+			};
+
+			usb3@f0000 {
+				compatible = "marvell,xhci-armada-380";
+				reg = <0xf0000 0x3fff>,<0xf4000 0x3fff>;
+				interrupts = <0x0 0x10 0x4>;
+				clocks = <&gateclk 0x9>;
+				status = "okay";
+			};
+
+			usb3@f8000 {
+				compatible = "marvell,xhci-armada-380";
+				reg = <0xf8000 0x3fff>,<0xfc000 0x3fff>;
+				interrupts = <0x0 0x11 0x4>;
+				clocks = <&gateclk 0xa>;
+				status = "okay";
+			};
+
+			/* ??? USB 2.0 ???
+				usb3-utmi@1842 {
+					compatible = "marvell,armada-380-usb-utmi";
+					reg = <0x18420 0x74 0xc0000 0x10000>;
+				};
+			*/
+
+			timer@20300 {
+				compatible = "marvell,armada-380-timer";
+				reg = <0x20300 0x30 0x21040 0x30>;
+				interrupts-extended = <0x2 0x0 0x8 0x4 0x2 0x0 0x9 0x4 0x2 0x0 0xa 0x4 0x2 0x0 0xb 0x4 0x5 0x5 0x5 0x6>;
+				clocks = <&coreclk 0x2 0xa>;
+				clock-names = "nbclk", "fixed";
+			};
+
+			xor@60800 {
+				compatible = "marvell,orion-xor";
+				reg = <0x60800 0x100 0x60a00 0x100>;
+				clocks = <&gateclk 0x16>;
+				status = "okay";
+
+				xor00 {
+					interrupts = <0x0 0x16 0x4>;
+					dmacap,memcpy;
+					dmacap,xor;
+					dmacap,interrupt;
+				};
+			};
+
+			xor@60900 {
+				compatible = "marvell,orion-xor";
+				reg = <0x60900 0x100 0x60b00 0x100>;
+				clocks = <&gateclk 0x1c>;
+				status = "okay";
+
+				xor10 {
+					interrupts = <0x0 0x41 0x4>;
+					dmacap,memcpy;
+					dmacap,xor;
+					dmacap,interrupt;
+				};
+			};
+
+			/*NOT USED*/
+			crypto@9D000 {
+				compatible = "marvell,armada-cesa";
+				reg = <0x9d000 0x1000 0x90000 0x1000 0x9f000 0x1000 0x92000 0x1000>;
+				clocks = <&gateclk 0x17 &gateclk 0xe &gateclk 0x15 &gateclk 0x10>;
+				clock-names = "crypto0", "crypto0z", "crypto1", "crypto1z";
+				cesa,channels = <0x2>;
+				cesa,mode = "ocf";
+				cesa,feature = "int_coalescing";
+				cesa,threshold = <0x2>;
+				cesa,time_threshold = <0xfffff>;
+				cesa,ctrlModel = [68 00];
+				cesa,ctrlRev = [02];
+				cesa,sramOffset = [00 00];
+				status = "disabled";
+
+				crypto10 {
+					interrupts = <0x0 0x13 0x4>;
+				};
+
+				crypto11 {
+					interrupts = <0x0 0x14 0x4>;
+				};
+			};
+		};
+
+		pcie-controller {
+			compatible = "marvell,armada-370-pcie";
+			status = "okay";
+			device_type = "pci";
+			#address-cells = <0x3>;
+			#size-cells = <0x2>;
+			msi-parent = <0x5>;
+			bus-range = <0x0 0xff>;
+			ranges = <0x82000000 0x0 0x80000 0xf0010000 0x80000 0x0 0x2000 0x82000000 0x0 0x40000 0xf0010000 0x40000 0x0 0x2000 0x82000000 0x0 0x44000 0xf0010000 0x44000 0x0 0x2000 0x82000000 0x0 0x48000 0xf0010000 0x48000 0x0 0x2000 0x82000000 0x1 0x0 0x8e80000 0x0 0x1 0x0 0x81000000 0x1 0x0 0x8e00000 0x0 0x1 0x0 0x82000000 0x2 0x0 0x4e80000 0x0 0x1 0x0 0x81000000 0x2 0x0 0x4e00000 0x0 0x1 0x0 0x82000000 0x3 0x0 0x4d80000 0x0 0x1 0x0 0x81000000 0x3 0x0 0x4d00000 0x0 0x1 0x0 0x82000000 0x4 0x0 0x4b80000 0x0 0x1 0x0 0x81000000 0x4 0x0 0x4b00000 0x0 0x1 0x0>;
+
+			/*NOT USED*/
+			pcie@1,0 {
+				device_type = "pci";
+				status = "disabled";
+			};
+
+			pcie@2,0 {
+				device_type = "pci";
+				assigned-addresses = <0x82000800 0x0 0x40000 0x0 0x2000>;
+				reg = <0x1000 0x0 0x0 0x0 0x0>;
+				#address-cells = <0x3>;
+				#size-cells = <0x2>;
+				#interrupt-cells = <0x1>;
+				ranges = <0x82000000 0x0 0x0 0x82000000 0x2 0x0 0x1 0x0 0x81000000 0x0 0x0 0x81000000 0x2 0x0 0x1 0x0>;
+				interrupt-map-mask = <0x0 0x0 0x0 0x0>;
+				interrupt-map = <0x0 0x0 0x0 0x0 0x2 0x0 0x21 0x4>;
+				marvell,pcie-port = <0x1>;
+				marvell,pcie-lane = <0x0>;
+				clocks = <&gateclk 0x5>;
+				status = "okay";
+			};
+
+			/*NOT USED*/
+			pcie@3,0 {
+				device_type = "pci";
+				status = "disabled";
+			};
+
+			/*NOT USED*/
+			pcie@4,0 {
+				device_type = "pci";
+				status = "disabled";
+			};
+		};
+    };
+
+	clocks {
+
+		oscillator {
+			compatible = "fixed-clock";
+			#clock-cells = <0x0>;
+			clock-frequency = <0x17d7840>;
+			linux,phandle = <0xa>;
+			phandle = <0xa>;
+		};
+
+		mainpll {
+			compatible = "fixed-clock";
+			#clock-cells = <0x0>;
+			clock-frequency = <0x77359400>;
+			linux,phandle = <0x4>;
+			phandle = <0x4>;
+		};
+	};
+};

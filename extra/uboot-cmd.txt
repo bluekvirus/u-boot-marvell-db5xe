@@ -1,0 +1,14 @@
+#Recovery Pattern UART(xmodem)
+echo -e '\xBB\x11\x22\x33\x44\x55\x66\x77' > /dev/ttyS0
+
+**Note**: Use bubt cmd after boot and select Y for Override Env parameters to default.
+**Note**: Re-plug the device after uboot update instead of calling (soft) reset. Since the spi-flash chip is in 4B mode now but bootrom only use 3B mode to read. (we reset it upon linux reboot but not yet for uboot reset)
+
+#Debug Pattern UART
+echo -e '\xDD\x11\x22\x33\x44\x55\x66\x77' > /dev/ttyS0
+
+#Boot (uImage, intiramfs, devicetree)
+setenv bootcmd tftpboot 0x50000000 $image_name\;tftpboot 0x55000000 fwf51e.dtb\;tftpboot 0x55100000 rootfs.cpio.uboot\;setenv bootargs $console earlyprintk\;setenv fdt_skip_update yes\;setenv initrd_high 0x2e44e000\;bootm 0x50000000 0x55100000 0x55000000
+
+#Boot (uImage, -, devicetree)
+setenv bootcmd tftpboot 0x50000000 $image_name\;tftpboot 0x55000000 fwf51e.dtb\;setenv bootargs $console earlyprintk\;setenv fdt_skip_update no\;bootm 0x50000000 - 0x55000000
