@@ -27,9 +27,9 @@ Hack it open
 
 Develop
 -------
-1. `/tools/marvell/bin_hdr/src_phy/` -- board SERDES Lanes topology
-2. `/board/mv_ebu/a38x/armada_38x_family/boardEnv/` -- board init hooks implementation
-3. `/drivers/mtd/spi/` -- SPI-Flash 4B mode support (for upgrading *this*)
+1. `/tools/marvell/bin_hdr/src_phy/` -- board SERDES Lanes topology (header:)
+2. `/board/mv_ebu/a38x/armada_38x_family/boardEnv/` -- board init hooks implementation (:u-boot:)
+3. `/drivers/mtd/spi/` -- SPI-Flash 4B mode support (for upgrading *this* header:u-boot:) 
 
 Debug
 -----
