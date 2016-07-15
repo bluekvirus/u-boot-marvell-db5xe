@@ -31,6 +31,14 @@ Develop
 2. `/board/mv_ebu/a38x/armada_38x_family/boardEnv/` -- board init hooks implementation (:u-boot:)
 3. `/drivers/mtd/spi/` -- SPI-Flash 4B mode support (for upgrading *this* header:u-boot:) 
 
+###Extra you need
+1. defconfig for buildroot (userland daemon and utils)
+2. defconfig for kernel (drivers)
+3. .dts device tree definition for kernel (dtb) 
+4. local.mk for buildroot to use customized kernel, *this* u-boot package and more userland daemon/utils
+
+Note: the only place you have to modify in the kernel is descripted in the .dts (SPI-Flash 4B to 3B reset upon reboot)
+
 Debug
 -----
 ###Console 
