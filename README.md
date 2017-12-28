@@ -43,6 +43,9 @@ Debug
 -----
 ### Console 
 ```
+sudo rm /var/lock/LCK..ttyS0
+sudo rm /var/lock/LCK..ttyUSB0
+
 sudo minicom -D /dev/ttyS0 -b 115200
 sudo minicom -D /dev/ttyUSB0 -b 115200
 
