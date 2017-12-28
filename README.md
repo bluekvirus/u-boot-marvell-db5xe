@@ -41,7 +41,7 @@ Note: the only place you have to modify in the kernel is descripted in the .dts 
 
 Debug
 -----
-### Console 
+### Console (minicom)
 ```
 sudo rm /var/lock/LCK..ttyS0
 sudo rm /var/lock/LCK..ttyUSB0
@@ -51,6 +51,8 @@ sudo minicom -D /dev/ttyUSB0 -b 115200
 
 CTRL-A Z E
 ```
+
+Alternatively you could use `gtkterm` if your input doesn't work within minicom.
 
 License
 -------
